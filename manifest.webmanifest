@@ -1,0 +1,17 @@
+{
+ "name": "卓越人生",
+ "short_name": "卓越人生",
+ "description": "一事卓越：每天练一个细节，做到一次点一次 +1。",
+ "lang": "zh-CN",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#06141a",
+ "theme_color": "#06141a",
+ "icons": [
+  {"src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
+  {"src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
+  {"src": "icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+ ]
+}

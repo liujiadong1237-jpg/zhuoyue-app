@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>卓越人生</title>
+<meta name="theme-color" content="#06141a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="卓越人生">
+<style>
+:root{color-scheme:dark;--bg:#06141a;--panel:#0b2329;--line:rgba(140,220,215,.16);--ink:#e8f4f2;--muted:#8fb0ad;--shoe:#3fe3d3;--warn:#ff7d69}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 -apple-system,BlinkMacSystemFont,"PingFang SC","Noto Sans SC","Microsoft YaHei",sans-serif;padding:calc(20px + env(safe-area-inset-top)) 16px calc(24px + env(safe-area-inset-bottom))}
+main{max-width:520px;margin:0 auto}
+h1{font-size:22px;margin:4px 0 2px;letter-spacing:.06em}
+.sub{color:var(--muted);font-size:13px;margin:0 0 16px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px;margin:0 0 12px}
+ol{margin:6px 0 0;padding-left:20px;color:var(--muted);font-size:14px}
+ol b{color:var(--ink)}
+a{color:var(--shoe)}
+label{display:block;font-size:13px;color:var(--muted);margin:12px 0 4px}
+input{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.25);color:var(--ink);font:inherit}
+button{width:100%;margin-top:14px;padding:12px;border-radius:12px;border:0;background:var(--shoe);color:#03201d;font:inherit;font-weight:700}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--ink);font-weight:400}
+.err{color:var(--warn);font-size:14px;min-height:1em;margin:10px 0 0}
+details{margin-top:10px;color:var(--muted);font-size:13px}
+.msg{color:var(--muted);text-align:center;margin-top:30vh}
+.small{font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<main id="m"><p class="msg">正在打开卓越人生……</p></main>
+<script>
+(function(){
+  'use strict';
+  /* 这是「外壳」：只负责记住这台设备的 GitHub 钥匙，再从私有仓库取出真正的软件（卓越一生/app/index.html）打开。
+     里面没有任何个人内容。软件本身和数据都在私有仓库，任何模型改了那里，软件就跟着变。 */
+  var DEF = {repo:'liujiadong1237-jpg/personal-evolution-system', branch:'main'};
+  var APP = '卓越一生/app/index.html';
+  var API = 'https://api.github.com';
+  var m = document.getElementById('m');
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function(){});
+
+  function load(k){ try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch(e){ return null; } }
+  function save(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function b64d(s){ var bin = atob(String(s || '').replace(/\s/g, '')), u = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i); return new TextDecoder().decode(u); }
+  function gh(cfg, path){
+    return fetch(API + path, {cache:'no-store', headers:{'Accept':'application/vnd.github+json', 'Authorization':'Bearer ' + cfg.token, 'X-GitHub-Api-Version':'2022-11-28'}}).then(function(r){
+      return r.json().catch(function(){ return null; }).then(function(j){ if (!r.ok){ var e = new Error((j && j.message) || ('HTTP ' + r.status)); e.status = r.status; throw e; } return j; });
+    });
+  }
+  function enc(p){ return p.split('/').map(encodeURIComponent).join('/'); }
+  function why(e, cfg){
+    var st = e && e.status;
+    if (st === 401) return '钥匙不对，或者已经过期了。重新生成一把再贴进来。';
+    if (st === 404) return '找不到仓库或软件文件：生成钥匙时要在「Repository access」里勾选 ' + esc(cfg.repo.split('/')[1]) + '，并且「Contents」选 Read and write。';
+    if (st === 403) return 'GitHub 拒绝了：' + esc(e.message) + '。';
+    if (!st) return '连不上 GitHub。检查一下网络（在国内可能要开代理），再点一次。';
+    return '出错了（' + st + '）：' + esc(e.message);
+  }
+  var HEAD = '<link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon-192.png"><link rel="apple-touch-icon" href="apple-touch-icon.png">' +
+    '<meta name="theme-color" content="#06141a"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">' +
+    '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="卓越人生">';
+  /* 换上软件本体时，把「能装成 app」的几行带过去 */
+  function show(html){ html = String(html).replace(/<head[^>]*>/i, function(h){ return h + HEAD; }); document.open(); document.write(html); document.close(); }
+  function fetchApp(cfg){
+    return gh(cfg, '/repos/' + cfg.repo + '/contents/' + enc(APP) + '?ref=' + encodeURIComponent(cfg.branch)).then(function(f){
+      var html = b64d(f.content);
+      try { localStorage.setItem('zy.appHtml', html); localStorage.setItem('zy.appSha', f.sha); } catch(e){}
+      return html;
+    });
+  }
+
+  var q = location.search, cfg = load('zy.cfg');
+  if (/[?&]reset\b/.test(q)){ localStorage.removeItem('zy.appHtml'); localStorage.removeItem('zy.appSha'); }
+  if (/[?&](reset|setup)\b/.test(q)) history.replaceState(null, '', location.pathname + location.hash);
+  if (/[?&]setup\b/.test(q) || !cfg || !cfg.token){ setup(cfg); return; }
+  var cached = localStorage.getItem('zy.appHtml');
+  if (cached){ show(cached); return; }
+  open(cfg);
+
+  function open(cfg){
+    m.innerHTML = '<p class="msg">正在从 GitHub 取软件……</p>';
+    fetchApp(cfg).then(show, function(e){
+      m.innerHTML = '<div class="card"><h1>没打开</h1><p class="err">' + why(e, cfg) + '</p><button id="again">再试一次</button><button class="ghost" id="key">换钥匙</button></div>';
+      document.getElementById('again').onclick = function(){ open(cfg); };
+      document.getElementById('key').onclick = function(){ setup(cfg); };
+    });
+  }
+
+  function setup(old){
+    old = old || {};
+    var phone = /iPhone|iPad|Android|Mobile/i.test(navigator.userAgent);
+    var dev = old.device || (phone ? '手机' : '电脑');
+    m.innerHTML =
+      '<h1>卓越人生</h1><p class="sub">这台设备第一次打开，要填一把 GitHub 钥匙。只填一次。</p>' +
+      '<div class="card"><b>为什么要钥匙</b><p class="small" style="margin:6px 0 0">软件和数据都在你的私有仓库里。钥匙只存在这台设备上，让软件能读、能把你点的 +1 写回去。手机和电脑各填一次，记录就互通了。</p></div>' +
+      '<div class="card"><b>怎么拿钥匙（大约 2 分钟）</b><ol>' +
+        '<li>打开 <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub 新建钥匙页</a>（要先登录 GitHub）。</li>' +
+        '<li><b>Token name</b> 填「卓越人生-' + esc(dev) + '」。</li>' +
+        '<li><b>Expiration</b> 选最长的。到期了这里会提示，再换一把就行。</li>' +
+        '<li><b>Repository access</b> 选 Only select repositories，勾 <b>' + esc((old.repo || DEF.repo).split('/')[1]) + '</b>。</li>' +
+        '<li><b>Permissions</b> → Repository permissions → <b>Contents</b> 选 <b>Read and write</b>。别的不用动。</li>' +
+        '<li>拉到最下面点 <b>Generate token</b>，复制 <b>github_pat_</b> 开头的那一串，贴到下面。</li>' +
+      '</ol></div>' +
+      '<div class="card"><label for="tk">GitHub 钥匙</label><input id="tk" type="password" autocomplete="off" placeholder="github_pat_……" value="' + esc(old.token || '') + '">' +
+        '<label for="dv">这台设备叫</label><input id="dv" value="' + esc(dev) + '" maxlength="12">' +
+        '<details><summary>高级（一般不用改）</summary><label for="rp">仓库</label><input id="rp" value="' + esc(old.repo || DEF.repo) + '"><label for="br">分支</label><input id="br" value="' + esc(old.branch || DEF.branch) + '"></details>' +
+        '<p class="err" id="er"></p><button id="go">保存并打开</button></div>' +
+      '<p class="small">装成 app：iPhone 用 Safari 打开这个网址 → 分享 → 添加到主屏幕；安卓用 Chrome → 菜单 → 安装应用；Windows 用 Edge 或 Chrome → 地址栏右边的「安装」图标。</p>';
+    document.getElementById('go').onclick = function(){
+      var c = {token:document.getElementById('tk').value.trim(), device:document.getElementById('dv').value.trim() || dev, repo:document.getElementById('rp').value.trim() || DEF.repo, branch:document.getElementById('br').value.trim() || DEF.branch};
+      var er = document.getElementById('er'), bt = this;
+      if (!/^(github_pat_|ghp_)/.test(c.token)){ er.textContent = '钥匙应该以 github_pat_ 开头。整串复制过来。'; return; }
+      bt.disabled = true; bt.textContent = '正在检查钥匙……'; er.textContent = '';
+      gh(c, '/repos/' + c.repo).then(function(){ return fetchApp(c); }).then(function(html){
+        save('zy.cfg', c); show(html);
+      }, function(e){ bt.disabled = false; bt.textContent = '保存并打开'; er.innerHTML = why(e, c); });
+    };
+  }
+})();
+</script>
+</body>
+</html>
