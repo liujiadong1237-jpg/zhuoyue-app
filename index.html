@@ -83,7 +83,8 @@ details{margin-top:10px;color:var(--muted);font-size:13px}
   if (/[?&](reset|setup)\b/.test(q)) history.replaceState(null, '', location.pathname + location.hash);
   if (/[?&]setup\b/.test(q) || !cfg || !cfg.token){ setup(cfg); return; }
   var cached = localStorage.getItem('zy.appHtml');
-  if (cached){ show(cached); return; }
+  /* 等外壳这一页读完再换上软件，否则 document.open 不生效，外壳的样式会混进软件里 */
+  if (cached){ setTimeout(function(){ show(cached); }, 0); return; }
   open(cfg);
 
   function open(cfg){
